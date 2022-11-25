@@ -1,10 +1,9 @@
-import json
-import random
-import time
-
 import agentpy as ap
 import numpy as np
+import random
+import json
 
+res_json = None
 class Car(ap.Agent):
 	def setup(self):
 		self.direction = np.array([0, 0])  # x | y
@@ -73,6 +72,9 @@ class Car(ap.Agent):
 				if distance < self.p.traffic_lights_y_offset * 3.2 and traffic_light.state == 2 and traffic_light_is_behind and distance > self.p.traffic_lights_y_offset * 1.8:
 					if self.velocity > 0:
 						self.velocity -= 1
+				elif distance < self.p.traffic_lights_y_offset * 3.2 and traffic_light.state == 1 and traffic_light_is_behind and distance > self.p.traffic_lights_y_offset * 1.8:
+					if self.velocity > 0:
+						self.velocity -= 0.5
 				else:
 					if self.velocity < self.max_velocity:
 						self.velocity += 0.5
@@ -83,7 +85,7 @@ class Car(ap.Agent):
 		self.position = self.model.avenue.positions[self]
 		data = self.model.data
 		id = "c_" + str(self.id)
-		data["steps"][self.model.t]["cars"].append({ id: { "position": [self.position[0], self.position[1]] } })
+		data["steps"][self.model.t]["cars"].append({ "position": [self.position[0], self.position[1]] })
 
 class Traffic_Light(ap.Agent):
 	def setup(self):
@@ -104,12 +106,10 @@ class Traffic_Light(ap.Agent):
 	def save_to_json(self):
 		data = self.model.data
 		id = "tl_" + str(self.id)
-		data["steps"][self.model.t]["traffic_lights"].append({ id: { "state": self.state } })
+		data["steps"][self.model.t]["traffic_lights"].append({ "state": self.state })
 
 class Model(ap.Model):
 	def setup(self):
-		self.res_json = None
-
 		## Archivo json
 		self.data = { }
 		self.data["steps"] = []
@@ -156,14 +156,18 @@ class Model(ap.Model):
 				car.direction = np.array([0, 1])
 				self.avenue.move_by(car,
 				                    [self.p.size * 0.5 + self.p.traffic_lights_x_offset + (
-						                    random_line * self.p.car_gap), (i * self.p.car_gap)]
+							                    random_line * self.p.car_gap),
+				                     (i * self.p.car_gap)
+				                     ]
 				                    )
 			# Left
 			else:
 				car.direction = np.array([0, -1])
 				self.avenue.move_by(car,
 				                    [self.p.size * 0.5 - self.p.traffic_lights_x_offset - (
-						                    random_line * self.p.car_gap), self.p.size - (i * self.p.car_gap)]
+							                    random_line * self.p.car_gap),
+				                     self.p.size - (i * self.p.car_gap)
+				                     ]
 				                    )
 		self.cars.put_traffic_lights()
 		self.cars.put_car_ahead()
@@ -178,6 +182,10 @@ class Model(ap.Model):
 
 		self.save_to_json()
 
+	def end(self):
+		print("endl")
+		self.res_json = json.dumps(self.data, indent = 2)
+
 	def save_to_json(self):
 		self.data["steps"].append({ })
 
@@ -186,6 +194,3 @@ class Model(ap.Model):
 
 		self.data["steps"][self.model.t]["traffic_lights"] = []
 		self.traffic_lights.save_to_json()
-
-	def end(self):
-		self.res_json = json.dumps(self.data, indent = 2)
