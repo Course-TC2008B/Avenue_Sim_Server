@@ -6,17 +6,18 @@ import avenue_sim
 app = Flask(__name__)
 
 parameters = {
-	"size": 1000,
-	"steps": 500,
-	"population": 10,
-	"green_duration": 20,
-	"yellow_duration": 10,
-	"red_duration": 60,
-	"traffic_lights_x_offset": 50,
-	"traffic_lights_y_offset": 70,
-	"car_gap": 20,
-	"road_lines": 1,
-	}
+    "size": 1000,
+    "seed": 100,
+    "steps": 250,
+    "population": 14,
+    "green_duration": 40,
+    "yellow_duration": 20,
+    "red_duration": 60,
+    "traffic_lights_x_offset": 20,
+    "traffic_lights_y_offset": 40,
+    "car_gap": 20,
+    "road_lines": 2,
+}
 
 @app.route('/')
 def home():
