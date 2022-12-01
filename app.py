@@ -1,22 +1,27 @@
 import time
 
-from flask import Flask, request
 import avenue_sim
+from flask import Flask, request
 
 app = Flask(__name__)
 
 parameters = {
     "size": 1000,
     "seed": 100,
-    "steps": 250,
-    "population": 14,
-    "green_duration": 40,
+    "steps": 400,
+    "population": 36,  # Amount of cars in simulation
+    "green_duration": 30,
     "yellow_duration": 20,
     "red_duration": 60,
-    "traffic_lights_x_offset": 20,
+    "traffic_lights_x_offset": 15,
     "traffic_lights_y_offset": 40,
-    "car_gap": 20,
+    "car_velocity_counted_as_stopped": 0.55,
+    # This is used for traffic lights to count a car as stopped (if current car velocity is lower than this value, it's stopped)
+    "car_gap": 25,
     "road_lines": 2,
+    "distance_to_stop_in_traffic_light": 100,
+    "distance_to_skip_traffic_light": 40,
+    "traffic_lights_evaluate_traffic": True,
 }
 
 @app.route('/')
@@ -29,6 +34,7 @@ def run_sim():  # put application's code here
 	seed = request.args.get('seed')
 	road_lines = request.args.get('road_lines')
 	population = request.args.get('population')
+	evaluate_traffic = request.args.get('evaluate_traffic')
 
 	if seed is not None:
 		parameters['seed'] = int(seed)
@@ -38,6 +44,9 @@ def run_sim():  # put application's code here
 
 	if population is not None:
 		parameters['population'] = int(population)
+
+	if evaluate_traffic is not None:
+		parameters['evaluate_traffic'] = bool(evaluate_traffic)
 
 	model = avenue_sim.Model(parameters)
 	model.run()
